@@ -1,0 +1,36 @@
+name: Windows.Registry.WinDefenderExclusions
+author: Eduardo Mattos - @eduardfir
+description: |
+    Return Windows Defender Exclusion Paths from registry
+    
+    Multiple malware families create path exclusions for Windows Defender
+    upon execution, in order to avoid detection. 
+
+    * ATT&CK tactic: Defense Evasion - TA0005
+    * ATT&CK technique: Modify Registry - T1112
+
+reference: 
+ - https://twitter.com/TheDFIRReport/status/1441066178701455367
+ 
+type: CLIENT
+
+precondition:
+  SELECT * FROM info() where OS = 'windows'
+
+parameters:
+  - name: SearchRegistryGlob
+    default: HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths\**
+    description: Use a glob to define the reg keys that will be searched.
+
+sources:
+  - query: |
+        SELECT  Name,
+                FullPath,
+                Data,
+                Sys,
+                ModTime as Modified
+        FROM glob(globs=SearchRegistryGlob, accessor='registry')
+
+column_types:
+  - name: Modified
+    type: timestamp
